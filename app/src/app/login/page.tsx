@@ -20,11 +20,13 @@ export default function LoginPage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
+      credentials: "include",
     });
 
     if (res.ok) {
-      router.push("/");
-      router.refresh();
+      // Full page reload ensures the cookie is sent with the next request
+      window.location.href = "/";
+      return;
     } else {
       setError("Invalid access code. Please try again.");
       setLoading(false);

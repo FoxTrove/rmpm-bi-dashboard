@@ -23,11 +23,12 @@ export const config = {
   matcher: [
     /*
      * Match all paths except:
+     * - api routes
      * - _next/static (static files)
      * - _next/image (image optimization)
      * - favicon.ico
      * - public files (logo, etc.)
      */
-    "/((?!_next/static|_next/image|favicon.ico|logo.png|.*\\.png$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|logo.png|.*\\.png$).*)",
   ],
 };
