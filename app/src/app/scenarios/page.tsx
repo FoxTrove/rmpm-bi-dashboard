@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "@/components/PageHeader";
+import DataSourceBadge from "@/components/DataSourceBadge";
 import {
   AreaChart,
   Area,
@@ -11,20 +12,16 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  BarChart,
-  Bar,
 } from "recharts";
 import {
   SlidersHorizontal,
   TrendingUp,
   TrendingDown,
-  DollarSign,
-  Building2,
   ArrowRight,
   Sparkles,
 } from "lucide-react";
 
-const BASE = {
+const DEFAULT_BASE = {
   totalUnits: 847,
   occupiedUnits: 811,
   avgRent: 1425,
@@ -36,38 +33,50 @@ const BASE = {
   avgTurnoverDays: 35,
 };
 
+interface BaseValues {
+  totalUnits: number;
+  occupiedUnits: number;
+  avgRent: number;
+  monthlyExpenses: number;
+  vacancyRate: number;
+  annualRentGrowth: number;
+  expenseGrowth: number;
+  turnoverCost: number;
+  avgTurnoverDays: number;
+}
+
 function computeScenario(
+  base: BaseValues,
   vacancyRate: number,
   rentAdjust: number,
   expenseChange: number,
   newUnits: number
 ) {
-  const totalUnits = BASE.totalUnits + newUnits;
+  const totalUnits = base.totalUnits + newUnits;
   const occupied = Math.round(totalUnits * (1 - vacancyRate / 100));
-  const avgRent = BASE.avgRent * (1 + rentAdjust / 100);
+  const avgRent = base.avgRent * (1 + rentAdjust / 100);
   const monthlyRevenue = occupied * avgRent;
-  const monthlyExpenses = (BASE.monthlyExpenses + newUnits * 380) * (1 + expenseChange / 100);
+  const monthlyExpenses = (base.monthlyExpenses + newUnits * 380) * (1 + expenseChange / 100);
   const noi = monthlyRevenue - monthlyExpenses;
   const annualRevenue = monthlyRevenue * 12;
   const annualNOI = noi * 12;
   const noiMargin = (noi / monthlyRevenue) * 100;
 
-  const baseOccupied = BASE.occupiedUnits;
-  const baseRevenue = baseOccupied * BASE.avgRent;
-  const baseNOI = baseRevenue - BASE.monthlyExpenses;
+  const baseOccupied = base.occupiedUnits;
+  const baseRevenue = baseOccupied * base.avgRent;
+  const baseNOI = baseRevenue - base.monthlyExpenses;
   const revenueDelta = monthlyRevenue - baseRevenue;
   const noiDelta = noi - baseNOI;
 
-  // 12 month projection
   const projection = [];
   for (let m = 1; m <= 12; m++) {
     const monthName = new Date(2025, 1 + m, 1).toLocaleString("en-US", { month: "short" });
-    const growthFactor = 1 + ((BASE.annualRentGrowth + rentAdjust) / 100) * (m / 12);
-    const expFactor = 1 + ((BASE.expenseGrowth + expenseChange) / 100) * (m / 12);
+    const growthFactor = 1 + ((base.annualRentGrowth + rentAdjust) / 100) * (m / 12);
+    const expFactor = 1 + ((base.expenseGrowth + expenseChange) / 100) * (m / 12);
     const projRev = occupied * avgRent * growthFactor;
     const projExp = monthlyExpenses * expFactor;
-    const baselineRev = baseOccupied * BASE.avgRent * (1 + (BASE.annualRentGrowth / 100) * (m / 12));
-    const baselineExp = BASE.monthlyExpenses * (1 + (BASE.expenseGrowth / 100) * (m / 12));
+    const baselineRev = baseOccupied * base.avgRent * (1 + (base.annualRentGrowth / 100) * (m / 12));
+    const baselineExp = base.monthlyExpenses * (1 + (base.expenseGrowth / 100) * (m / 12));
     projection.push({
       month: monthName,
       scenarioNOI: Math.round(projRev - projExp),
@@ -94,13 +103,74 @@ function computeScenario(
 }
 
 export default function Scenarios() {
-  const [vacancyRate, setVacancyRate] = useState(BASE.vacancyRate);
+  const [base, setBase] = useState<BaseValues>(DEFAULT_BASE);
+  const [dataSource, setDataSource] = useState<"appfolio" | "mock" | "loading">("loading");
+
+  const [vacancyRate, setVacancyRate] = useState(DEFAULT_BASE.vacancyRate);
   const [rentAdjust, setRentAdjust] = useState(0);
   const [expenseChange, setExpenseChange] = useState(0);
   const [newUnits, setNewUnits] = useState(0);
 
-  const scenario = computeScenario(vacancyRate, rentAdjust, expenseChange, newUnits);
+  // Fetch live baseline from overview API
+  useEffect(() => {
+    async function fetchBaseline() {
+      try {
+        const res = await fetch("/api/appfolio/portfolio");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const portfolioData = json.data;
+
+        if (portfolioData?.summaryCards && portfolioData?.properties) {
+          const totalUnitsCard = portfolioData.summaryCards.find(
+            (c: { label: string }) => c.label === "Total Units"
+          );
+          const totalUnits = totalUnitsCard ? parseInt(totalUnitsCard.value.replace(/,/g, "")) : DEFAULT_BASE.totalUnits;
+
+          const occupancyCard = portfolioData.summaryCards.find(
+            (c: { label: string }) => c.label === "Avg Occupancy"
+          );
+          const occupancyPct = occupancyCard ? parseFloat(occupancyCard.value) : 95.8;
+          const occupiedUnits = Math.round(totalUnits * (occupancyPct / 100));
+          const vacRate = ((totalUnits - occupiedUnits) / totalUnits) * 100;
+
+          const rentCard = portfolioData.summaryCards.find(
+            (c: { label: string }) => c.label === "Total Monthly Rent"
+          );
+          const totalRent = rentCard
+            ? parseInt(rentCard.value.replace(/[$,]/g, ""))
+            : DEFAULT_BASE.avgRent * DEFAULT_BASE.occupiedUnits;
+          const avgRent = occupiedUnits > 0 ? Math.round(totalRent / occupiedUnits) : DEFAULT_BASE.avgRent;
+
+          const newBase: BaseValues = {
+            ...DEFAULT_BASE,
+            totalUnits,
+            occupiedUnits,
+            avgRent,
+            vacancyRate: parseFloat(vacRate.toFixed(1)),
+          };
+
+          setBase(newBase);
+          setVacancyRate(newBase.vacancyRate);
+          setDataSource(json.source);
+        } else {
+          setDataSource("mock");
+        }
+      } catch {
+        setDataSource("mock");
+      }
+    }
+    fetchBaseline();
+  }, []);
+
+  const scenario = computeScenario(base, vacancyRate, rentAdjust, expenseChange, newUnits);
   const isPositive = scenario.noiDelta >= 0;
+
+  const resetSliders = () => {
+    setVacancyRate(base.vacancyRate);
+    setRentAdjust(0);
+    setExpenseChange(0);
+    setNewUnits(0);
+  };
 
   return (
     <>
@@ -108,6 +178,10 @@ export default function Scenarios() {
         title="What-If Scenario Modeler"
         subtitle="Drag the sliders — watch your financials change in real-time"
       />
+
+      <div className="mb-4 flex justify-end">
+        <DataSourceBadge source={dataSource} />
+      </div>
 
       {/* Sliders */}
       <div className="rounded-xl bg-card border border-border p-6 shadow-sm mb-6">
@@ -117,7 +191,7 @@ export default function Scenarios() {
             Adjust Your Scenario
           </h2>
           <button
-            onClick={() => { setVacancyRate(BASE.vacancyRate); setRentAdjust(0); setExpenseChange(0); setNewUnits(0); }}
+            onClick={resetSliders}
             className="ml-auto text-xs text-navy hover:underline"
           >
             Reset to current
@@ -129,7 +203,7 @@ export default function Scenarios() {
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-sm font-medium text-text">Vacancy Rate</label>
-              <span className={`text-sm font-bold font-mono ${vacancyRate > BASE.vacancyRate ? "text-critical" : vacancyRate < BASE.vacancyRate ? "text-success" : "text-text"}`}>
+              <span className={`text-sm font-bold font-mono ${vacancyRate > base.vacancyRate ? "text-critical" : vacancyRate < base.vacancyRate ? "text-success" : "text-text"}`}>
                 {vacancyRate.toFixed(1)}%
               </span>
             </div>
@@ -144,7 +218,7 @@ export default function Scenarios() {
             />
             <div className="flex justify-between text-[10px] text-text-secondary mt-1">
               <span>0% (Full)</span>
-              <span className="text-navy font-medium">Current: {BASE.vacancyRate}%</span>
+              <span className="text-navy font-medium">Current: {base.vacancyRate}%</span>
               <span>15%</span>
             </div>
           </div>
@@ -168,7 +242,7 @@ export default function Scenarios() {
             />
             <div className="flex justify-between text-[10px] text-text-secondary mt-1">
               <span>-10%</span>
-              <span className="text-navy font-medium">Current: $1,425 avg</span>
+              <span className="text-navy font-medium">Current: ${base.avgRent.toLocaleString()} avg</span>
               <span>+15%</span>
             </div>
           </div>
@@ -192,7 +266,7 @@ export default function Scenarios() {
             />
             <div className="flex justify-between text-[10px] text-text-secondary mt-1">
               <span>-15%</span>
-              <span className="text-navy font-medium">Current: $312K/mo</span>
+              <span className="text-navy font-medium">Current: ${(base.monthlyExpenses / 1000).toFixed(0)}K/mo</span>
               <span>+20%</span>
             </div>
           </div>
@@ -216,7 +290,7 @@ export default function Scenarios() {
             />
             <div className="flex justify-between text-[10px] text-text-secondary mt-1">
               <span>0</span>
-              <span className="text-navy font-medium">Current: 847 doors</span>
+              <span className="text-navy font-medium">Current: {base.totalUnits} doors</span>
               <span>+200</span>
             </div>
           </div>
@@ -315,12 +389,12 @@ export default function Scenarios() {
           {[
             {
               title: "Optimize Underpriced Units",
-              description: "Raise rent 3% on 6 identified below-market units at renewal. Projected impact: +$5,196/yr with zero vacancy risk.",
-              action: () => { setRentAdjust(3); setVacancyRate(4.2); setExpenseChange(0); setNewUnits(0); },
+              description: `Raise rent 3% on identified below-market units at renewal. Projected impact: +$${Math.round(base.occupiedUnits * base.avgRent * 0.03 * 0.02 * 12).toLocaleString()}/yr with zero vacancy risk.`,
+              action: () => { setRentAdjust(3); setVacancyRate(base.vacancyRate); setExpenseChange(0); setNewUnits(0); },
             },
             {
               title: "Worst Case: Recession",
-              description: "Model 8% vacancy + 5% expense increase. See how the portfolio holds up under stress. Spoiler: NOI stays positive.",
+              description: "Model 8% vacancy + 5% expense increase. See how the portfolio holds up under stress.",
               action: () => { setVacancyRate(8); setExpenseChange(5); setRentAdjust(-2); setNewUnits(0); },
             },
             {

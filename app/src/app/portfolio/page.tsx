@@ -2,6 +2,9 @@
 
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
+import DataSourceBadge from "@/components/DataSourceBadge";
+import { useAppFolioData } from "@/hooks/useAppFolioData";
+import type { DashboardPortfolioData } from "@/lib/transformers/portfolio";
 import {
   BarChart,
   Bar,
@@ -15,53 +18,64 @@ import {
   Cell,
 } from "recharts";
 
-const properties = [
-  { name: "Oak Apartments", units: 48, occupied: 46, vacancy: "4.2%", rent: "$72,450", maintenance: 3, status: "success" as const },
-  { name: "Pine Court", units: 32, occupied: 31, vacancy: "3.1%", rent: "$49,200", maintenance: 1, status: "success" as const },
-  { name: "Maple Ridge", units: 24, occupied: 22, vacancy: "8.3%", rent: "$33,000", maintenance: 5, status: "warning" as const },
-  { name: "Cedar Heights", units: 56, occupied: 54, vacancy: "3.6%", rent: "$86,400", maintenance: 2, status: "success" as const },
-  { name: "Birch Terrace", units: 18, occupied: 18, vacancy: "0%", rent: "$28,800", maintenance: 0, status: "success" as const },
-  { name: "Elm Ridge", units: 40, occupied: 37, vacancy: "7.5%", rent: "$55,500", maintenance: 4, status: "warning" as const },
-  { name: "Spruce Commons", units: 28, occupied: 27, vacancy: "3.6%", rent: "$43,200", maintenance: 1, status: "success" as const },
-  { name: "Willow Park", units: 64, occupied: 62, vacancy: "3.1%", rent: "$99,200", maintenance: 3, status: "success" as const },
-];
-
-const vacancyByProperty = properties.map((p) => ({
-  name: p.name.split(" ")[0],
-  vacancy: parseFloat(p.vacancy),
-}));
-
-const occupancyPie = [
-  { name: "Occupied", value: 811 },
-  { name: "Vacant", value: 36 },
-];
-
 const COLORS = ["#1E3A5F", "#E5E7EB"];
 
-const maintenanceSummary = [
-  { category: "Plumbing", count: 8 },
-  { category: "Electrical", count: 4 },
-  { category: "HVAC", count: 6 },
-  { category: "Appliance", count: 5 },
-  { category: "General", count: 12 },
-];
+const fallback: DashboardPortfolioData = {
+  properties: [
+    { name: "Oak Apartments", units: 48, occupied: 46, vacancy: "4.2%", rent: "$72,450", status: "success" },
+    { name: "Pine Court", units: 32, occupied: 31, vacancy: "3.1%", rent: "$49,200", status: "success" },
+    { name: "Maple Ridge", units: 24, occupied: 22, vacancy: "8.3%", rent: "$33,000", status: "warning" },
+    { name: "Cedar Heights", units: 56, occupied: 54, vacancy: "3.6%", rent: "$86,400", status: "success" },
+    { name: "Birch Terrace", units: 18, occupied: 18, vacancy: "0%", rent: "$28,800", status: "success" },
+    { name: "Elm Ridge", units: 40, occupied: 37, vacancy: "7.5%", rent: "$55,500", status: "warning" },
+    { name: "Spruce Commons", units: 28, occupied: 27, vacancy: "3.6%", rent: "$43,200", status: "success" },
+    { name: "Willow Park", units: 64, occupied: 62, vacancy: "3.1%", rent: "$99,200", status: "success" },
+  ],
+  vacancyByProperty: [
+    { name: "Oak", vacancy: 4.2 },
+    { name: "Pine", vacancy: 3.1 },
+    { name: "Maple", vacancy: 8.3 },
+    { name: "Cedar", vacancy: 3.6 },
+    { name: "Birch", vacancy: 0 },
+    { name: "Elm", vacancy: 7.5 },
+    { name: "Spruce", vacancy: 3.6 },
+    { name: "Willow", vacancy: 3.1 },
+  ],
+  occupancyPie: [
+    { name: "Occupied", value: 297 },
+    { name: "Vacant", value: 13 },
+  ],
+  summaryCards: [
+    { label: "Total Properties", value: "8" },
+    { label: "Total Units", value: "310" },
+    { label: "Avg Occupancy", value: "95.8%" },
+    { label: "Total Monthly Rent", value: "$467,750" },
+  ],
+};
 
 export default function Portfolio() {
+  const { data, source, error } = useAppFolioData<DashboardPortfolioData>(
+    "/api/appfolio/portfolio",
+    fallback
+  );
+
+  const { properties, vacancyByProperty, occupancyPie, summaryCards } = data!;
+  const totalUnits = occupancyPie.reduce((sum, d) => sum + d.value, 0);
+
   return (
     <>
       <PageHeader
         title="Portfolio Performance"
-        subtitle="All properties at a glance — 847 doors under management"
+        subtitle={`All properties at a glance — ${totalUnits} doors under management`}
       />
+
+      <div className="mb-4 flex justify-end">
+        <DataSourceBadge source={source} error={error} />
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">
-        {[
-          { label: "Total Properties", value: "23" },
-          { label: "Total Units", value: "847" },
-          { label: "Avg Occupancy", value: "95.8%" },
-          { label: "Total Monthly Rent", value: "$467,750" },
-        ].map((card) => (
+        {summaryCards.map((card) => (
           <div key={card.label} className="rounded-xl bg-card border border-border p-5 shadow-sm">
             <p className="text-sm font-medium text-text-secondary">{card.label}</p>
             <p className="mt-1 text-2xl font-bold text-text">{card.value}</p>
@@ -111,10 +125,10 @@ export default function Portfolio() {
           </ResponsiveContainer>
           <div className="flex justify-center gap-6 text-xs text-text-secondary">
             <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-navy" /> Occupied (811)
+              <span className="h-2.5 w-2.5 rounded-full bg-navy" /> Occupied ({occupancyPie[0]?.value ?? 0})
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="h-2.5 w-2.5 rounded-full bg-border" /> Vacant (36)
+              <span className="h-2.5 w-2.5 rounded-full bg-border" /> Vacant ({occupancyPie[1]?.value ?? 0})
             </span>
           </div>
         </div>
@@ -136,7 +150,6 @@ export default function Portfolio() {
                 <th className="px-5 py-3 text-left font-medium text-text-secondary">Occupied</th>
                 <th className="px-5 py-3 text-left font-medium text-text-secondary">Vacancy</th>
                 <th className="px-5 py-3 text-left font-medium text-text-secondary">Monthly Rent</th>
-                <th className="px-5 py-3 text-left font-medium text-text-secondary">Open Maint.</th>
                 <th className="px-5 py-3 text-left font-medium text-text-secondary">Status</th>
               </tr>
             </thead>
@@ -148,7 +161,6 @@ export default function Portfolio() {
                   <td className="px-5 py-3 text-text-secondary">{p.occupied}</td>
                   <td className="px-5 py-3 text-text-secondary">{p.vacancy}</td>
                   <td className="px-5 py-3 font-mono text-text">{p.rent}</td>
-                  <td className="px-5 py-3 text-text-secondary">{p.maintenance}</td>
                   <td className="px-5 py-3">
                     <StatusBadge level={p.status} text={p.status === "success" ? "Healthy" : "Attention"} />
                   </td>
@@ -157,22 +169,6 @@ export default function Portfolio() {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Maintenance Overview */}
-      <div className="rounded-xl bg-card border border-border p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-text uppercase tracking-wider mb-4">
-          Maintenance by Category
-        </h2>
-        <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={maintenanceSummary} layout="vertical">
-            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-            <XAxis type="number" tick={{ fontSize: 12 }} stroke="#666" />
-            <YAxis dataKey="category" type="category" tick={{ fontSize: 12 }} stroke="#666" width={80} />
-            <Tooltip />
-            <Bar dataKey="count" fill="#C41230" radius={[0, 4, 4, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
       </div>
     </>
   );
