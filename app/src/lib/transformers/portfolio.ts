@@ -16,11 +16,12 @@ export interface DashboardPortfolioData {
   summaryCards: { label: string; value: string }[];
 }
 
+function isVacant(status: string): boolean {
+  return status.toLowerCase().startsWith("vacant");
+}
+
 function formatCurrency(amount: number): string {
-  if (amount >= 1000) {
-    return `$${Math.round(amount).toLocaleString()}`;
-  }
-  return `$${amount.toLocaleString()}`;
+  return `$${Math.round(amount).toLocaleString()}`;
 }
 
 export function transformPortfolio(
@@ -39,16 +40,14 @@ export function transformPortfolio(
     }
     const prop = propertyMap.get(name)!;
     prop.total++;
-    const isOccupied =
-      entry.status !== "Vacant" && entry.status !== "vacant";
-    if (isOccupied) {
+    if (!isVacant(entry.status)) {
       prop.occupied++;
-      prop.totalRent += entry.rent || 0;
+      prop.totalRent += parseFloat(entry.rent || "0");
     }
   }
 
-  // Build properties array
-  const properties: DashboardProperty[] = Array.from(propertyMap.entries())
+  // Build properties array — only show multi-unit properties (2+ units) for readability
+  const allProperties: DashboardProperty[] = Array.from(propertyMap.entries())
     .map(([name, data]) => {
       const vacancyPct =
         data.total > 0
@@ -67,17 +66,18 @@ export function transformPortfolio(
     })
     .sort((a, b) => b.units - a.units);
 
-  // Vacancy bar chart data — use first word of name for label
-  const vacancyByProperty = properties.map((p) => ({
-    name: p.name.length > 12 ? p.name.substring(0, 12) + "..." : p.name,
+  // For the table: show properties with 2+ units (avoids showing 1000+ single-unit homes)
+  const properties = allProperties.filter((p) => p.units >= 2);
+
+  // Vacancy bar chart — top 15 multi-unit properties by unit count
+  const vacancyByProperty = properties.slice(0, 15).map((p) => ({
+    name: p.name.length > 15 ? p.name.substring(0, 15) + "..." : p.name,
     vacancy: parseFloat(p.vacancy),
   }));
 
-  // Occupancy pie
+  // Occupancy pie — total across ALL units
   const totalUnits = rentRoll.length;
-  const occupiedUnits = rentRoll.filter(
-    (e) => e.status !== "Vacant" && e.status !== "vacant"
-  ).length;
+  const occupiedUnits = rentRoll.filter((e) => !isVacant(e.status)).length;
   const vacantUnits = totalUnits - occupiedUnits;
 
   const occupancyPie = [
@@ -87,15 +87,18 @@ export function transformPortfolio(
 
   // Summary cards
   const totalMonthlyRent = rentRoll
-    .filter((e) => e.status !== "Vacant" && e.status !== "vacant")
-    .reduce((sum, e) => sum + (e.rent || 0), 0);
+    .filter((e) => !isVacant(e.status))
+    .reduce((sum, e) => sum + parseFloat(e.rent || "0"), 0);
   const avgOccupancy =
     totalUnits > 0
       ? ((occupiedUnits / totalUnits) * 100).toFixed(1)
       : "0.0";
 
+  // Count distinct properties (including single-unit)
+  const totalPropertyCount = propertyMap.size;
+
   const summaryCards = [
-    { label: "Total Properties", value: properties.length.toString() },
+    { label: "Total Properties", value: totalPropertyCount.toLocaleString() },
     { label: "Total Units", value: totalUnits.toLocaleString() },
     { label: "Avg Occupancy", value: `${avgOccupancy}%` },
     { label: "Total Monthly Rent", value: formatCurrency(totalMonthlyRent) },

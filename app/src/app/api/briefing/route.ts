@@ -89,15 +89,14 @@ export async function GET() {
     ]);
 
     // Build portfolio snapshot for AI
+    const isVacant = (status: string) => status.toLowerCase().startsWith("vacant");
     const totalUnits = rentRoll.length;
-    const vacantUnits = rentRoll.filter(
-      (e) => e.status === "Vacant" || e.status === "vacant"
-    ).length;
+    const vacantUnits = rentRoll.filter((e) => isVacant(e.status)).length;
     const occupiedUnits = totalUnits - vacantUnits;
     const vacancyRate = totalUnits > 0 ? ((vacantUnits / totalUnits) * 100).toFixed(1) : "0.0";
     const totalMonthlyRent = rentRoll
-      .filter((e) => e.status !== "Vacant" && e.status !== "vacant")
-      .reduce((sum, e) => sum + (e.rent || 0), 0);
+      .filter((e) => !isVacant(e.status))
+      .reduce((sum, e) => sum + parseFloat(e.rent || "0"), 0);
 
     // Group by property to find high-vacancy ones
     const propMap = new Map<string, { total: number; vacant: number }>();
@@ -106,10 +105,10 @@ export async function GET() {
       if (!propMap.has(name)) propMap.set(name, { total: 0, vacant: 0 });
       const p = propMap.get(name)!;
       p.total++;
-      if (entry.status === "Vacant" || entry.status === "vacant") p.vacant++;
+      if (isVacant(entry.status)) p.vacant++;
     }
     const propertiesWithHighVacancy = Array.from(propMap.entries())
-      .filter(([, d]) => d.total > 0 && (d.vacant / d.total) * 100 > 7)
+      .filter(([, d]) => d.total > 1 && d.total > 0 && (d.vacant / d.total) * 100 > 7)
       .map(([name]) => name);
 
     // Renewals
@@ -118,22 +117,22 @@ export async function GET() {
     const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
     const renewals30d = rentRoll.filter((e) => {
-      if (!e.lease_to || e.status === "Vacant") return false;
+      if (!e.lease_to || isVacant(e.status)) return false;
       const end = new Date(e.lease_to);
       return end >= now && end <= thirtyDays;
     });
-    const criticalRenewals = renewals30d.filter((e) => new Date(e.lease_to) <= fourteenDays).length;
+    const criticalRenewals = renewals30d.filter((e) => new Date(e.lease_to!) <= fourteenDays).length;
     const urgentRenewals = renewals30d.length - criticalRenewals;
 
-    // Active leads
+    // Active leads — real statuses: New, Decision Pending, Approved, Converting
     const activeLeads = applications.filter(
-      (a) => a.status === "Pending" || a.status === "Approved"
+      (a) => ["New", "Decision Pending", "Approved", "Converting"].includes(a.status)
     ).length;
 
-    // Top sources
+    // Top sources — real field: guest_card_inquiries
     const topLeadSources = prospectSources
-      .filter((s) => s.inquiries > 0)
-      .sort((a, b) => b.inquiries - a.inquiries)
+      .filter((s) => s.guest_card_inquiries > 0)
+      .sort((a, b) => b.guest_card_inquiries - a.guest_card_inquiries)
       .slice(0, 3)
       .map((s) => s.source);
 

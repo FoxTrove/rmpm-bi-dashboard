@@ -1,47 +1,53 @@
 // AppFolio Reporting API v2 response types
+// Field names and types match actual API responses
 
 // --- Rent Roll Report ---
 export interface AppFolioRentRollEntry {
-  property_name: string;
-  unit_name: string;
-  tenant_name: string;
-  tenant_email: string;
-  tenant_phone: string;
-  move_in_date: string;
-  lease_from: string;
-  lease_to: string;
-  market_rent: number;
-  rent: number;
-  deposit: number;
-  status: string; // "Current" | "Vacant" | "Notice" | "Eviction" etc.
+  property: string;
+  property_name: string | null;
+  property_id: number;
   property_address: string;
-  unit_type: string;
-  bedrooms: number;
-  bathrooms: number;
-  square_feet: number;
+  property_city: string;
+  property_state: string;
+  property_zip: string;
+  property_type: string;
+  unit: string;
+  unit_id: number;
+  unit_type: string | null;
+  bd_ba: string | null;
+  sqft: number | null;
+  tenant: string | null;
+  tenant_id: number | null;
+  status: string; // "Current" | "Vacant-Unrented" | "Vacant-Rented" | "Notice-Unrented" | "Notice-Rented" | "Evict"
+  market_rent: string; // decimal string e.g. "1249.00"
+  rent: string; // decimal string
+  deposit: string; // decimal string
+  lease_from: string | null;
+  lease_to: string | null;
+  move_in: string | null;
+  move_out: string | null;
+  past_due: string;
+  monthly_charges: string;
+  rent_ready: string;
+  occupancy_id: number;
 }
 
 // --- Workflow (In-Progress) ---
 export interface AppFolioWorkflow {
-  id: number;
   workflow_name: string;
-  step_name: string;
-  property_name: string;
-  unit_name: string;
-  tenant_name: string;
-  assigned_to: string;
-  started_at: string;
-  updated_at: string;
+  current_step: string;
   status: string;
+  property: string | null;
+  attachable_for: string;
+  assigned_to: string;
+  due_date: string | null;
 }
 
 // --- Completed Workflow ---
 export interface AppFolioCompletedWorkflow {
-  id: number;
   workflow_name: string;
-  property_name: string;
-  unit_name: string;
-  tenant_name: string;
+  property: string | null;
+  attachable_for: string;
   completed_at: string;
   started_at: string;
   result: string;
@@ -50,24 +56,26 @@ export interface AppFolioCompletedWorkflow {
 // --- Prospect Source Tracking ---
 export interface AppFolioProspectSource {
   source: string;
-  inquiries: number;
+  guest_card_inquiries: number;
   showings: number;
   applications: number;
-  move_ins: number;
-  conversion_rate: number;
+  approved_applications: number;
+  converted_tenants: number;
 }
 
 // --- Rental Application ---
 export interface AppFolioRentalApplication {
-  id: number;
-  applicant_name: string;
+  rental_application_id: number;
+  applicants: string;
   property_name: string;
   unit_name: string;
-  status: string; // "Pending" | "Approved" | "Denied" | "Cancelled"
-  applied_at: string;
-  source: string;
+  status: string; // "New" | "Decision Pending" | "Approved" | "Converted" | "Converting" | "Denied" | "Canceled"
+  received: string;
+  lead_source: string;
   desired_move_in: string;
-  monthly_income: number;
+  monthly_salary: string;
+  assigned_user: string;
+  created_by: string;
 }
 
 // --- Generic paginated response ---

@@ -7,6 +7,10 @@ import type {
   DashboardRenewal,
 } from "../appfolio/types";
 
+function isVacant(status: string): boolean {
+  return status.toLowerCase().startsWith("vacant");
+}
+
 function daysUntil(dateStr: string): number {
   const target = new Date(dateStr);
   const now = new Date();
@@ -38,20 +42,28 @@ function getRenewalStatus(
   entry: AppFolioRentRollEntry,
   workflows: AppFolioWorkflow[]
 ): { status: string; level: "critical" | "warning" | "success"; assignedTo: string; lastContact: string } {
-  // Find matching workflow for this unit
+  const propName = entry.property_name || "";
+  const unitName = entry.unit || "";
+
+  // Match workflow: property matches and workflow is a renewal type
   const workflow = workflows.find(
     (w) =>
-      w.property_name === entry.property_name &&
-      w.unit_name === entry.unit_name &&
+      w.property === propName &&
+      w.workflow_name.toLowerCase().includes("renewal")
+  ) || workflows.find(
+    (w) =>
+      w.attachable_for === unitName &&
       w.workflow_name.toLowerCase().includes("renewal")
   );
 
   if (!workflow) {
-    // No workflow = no contact yet
+    if (entry.status.includes("Notice")) {
+      return { status: "Moving Out", level: "critical", assignedTo: "Unassigned", lastContact: "—" };
+    }
     return { status: "No Contact", level: "critical", assignedTo: "Unassigned", lastContact: "Never" };
   }
 
-  const stepLower = (workflow.step_name || "").toLowerCase();
+  const stepLower = (workflow.current_step || "").toLowerCase();
   const statusLower = (workflow.status || "").toLowerCase();
 
   if (stepLower.includes("signed") || stepLower.includes("completed") || statusLower.includes("renewed")) {
@@ -59,7 +71,7 @@ function getRenewalStatus(
       status: "Renewed",
       level: "success",
       assignedTo: workflow.assigned_to || "—",
-      lastContact: formatDate(workflow.updated_at),
+      lastContact: workflow.due_date ? formatDate(workflow.due_date) : "—",
     };
   }
 
@@ -68,16 +80,15 @@ function getRenewalStatus(
       status: "Moving Out",
       level: "critical",
       assignedTo: workflow.assigned_to || "—",
-      lastContact: formatDate(workflow.updated_at),
+      lastContact: workflow.due_date ? formatDate(workflow.due_date) : "—",
     };
   }
 
-  // Default: in negotiation
   return {
     status: "Negotiating",
     level: "warning",
     assignedTo: workflow.assigned_to || "—",
-    lastContact: formatDate(workflow.updated_at),
+    lastContact: workflow.due_date ? formatDate(workflow.due_date) : "—",
   };
 }
 
@@ -85,17 +96,15 @@ export function transformRenewals(
   rentRoll: AppFolioRentRollEntry[],
   workflows: AppFolioWorkflow[]
 ): DashboardRenewalsData {
-  // Filter to leases ending within 90 days
   const now = new Date();
   const ninetyDaysOut = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
 
   const expiringLeases = rentRoll.filter((entry) => {
-    if (!entry.lease_to || entry.status === "Vacant") return false;
+    if (!entry.lease_to || isVacant(entry.status)) return false;
     const leaseEnd = new Date(entry.lease_to);
     return leaseEnd >= now && leaseEnd <= ninetyDaysOut;
   });
 
-  // Build urgency summary buckets
   const buckets: Record<string, { count: number; revenue: number; color: UrgencyColor; label: string }> = {
     "Critical (0-14 days)": { count: 0, revenue: 0, color: "critical", label: "Critical (0-14 days)" },
     "Urgent (15-30 days)": { count: 0, revenue: 0, color: "warning", label: "Urgent (15-30 days)" },
@@ -104,10 +113,10 @@ export function transformRenewals(
   };
 
   for (const entry of expiringLeases) {
-    const days = daysUntil(entry.lease_to);
+    const days = daysUntil(entry.lease_to!);
     const bucket = getUrgencyBucket(days);
     buckets[bucket.label].count++;
-    buckets[bucket.label].revenue += entry.rent || 0;
+    buckets[bucket.label].revenue += parseFloat(entry.rent || "0");
   }
 
   const renewalSummary: DashboardRenewalSummary[] = Object.values(buckets).map((b) => ({
@@ -119,7 +128,6 @@ export function transformRenewals(
     color: b.color,
   }));
 
-  // Build status breakdown
   const statusCounts: Record<string, number> = {
     Renewed: 0,
     Negotiating: 0,
@@ -130,13 +138,12 @@ export function transformRenewals(
   const renewalDetails: DashboardRenewal[] = expiringLeases
     .map((entry) => {
       const { status, level, assignedTo, lastContact } = getRenewalStatus(entry, workflows);
-      const statusKey = status === "No Contact" ? "No Contact" : status;
-      if (statusCounts[statusKey] !== undefined) statusCounts[statusKey]++;
+      if (statusCounts[status] !== undefined) statusCounts[status]++;
       return {
-        property: entry.property_name,
-        unit: entry.unit_name || "—",
-        tenant: entry.tenant_name,
-        leaseEnds: formatDate(entry.lease_to),
+        property: entry.property_name || "Unknown",
+        unit: entry.unit || "—",
+        tenant: entry.tenant || "—",
+        leaseEnds: formatDate(entry.lease_to!),
         status,
         level,
         assignedTo,
@@ -144,7 +151,6 @@ export function transformRenewals(
       };
     })
     .sort((a, b) => {
-      // Sort by urgency: critical first
       const levelOrder = { critical: 0, warning: 1, success: 2 };
       return (levelOrder[a.level] ?? 2) - (levelOrder[b.level] ?? 2);
     });

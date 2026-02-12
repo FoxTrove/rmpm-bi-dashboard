@@ -1,11 +1,19 @@
 import type { AppFolioRentRollEntry, DashboardOverviewData, DashboardKPI } from "../appfolio/types";
 
+function isVacant(status: string): boolean {
+  return status.toLowerCase().startsWith("vacant");
+}
+
 export function transformOverview(rentRoll: AppFolioRentRollEntry[]): DashboardOverviewData {
   const totalDoors = rentRoll.length;
-  const vacantUnits = rentRoll.filter(
-    (e) => e.status === "Vacant" || e.status === "vacant"
-  ).length;
+  const vacantUnits = rentRoll.filter((e) => isVacant(e.status)).length;
+  const occupiedUnits = totalDoors - vacantUnits;
   const vacancyRate = totalDoors > 0 ? ((vacantUnits / totalDoors) * 100).toFixed(1) : "0.0";
+
+  // Total monthly rent (parse string to number)
+  const totalRent = rentRoll
+    .filter((e) => !isVacant(e.status))
+    .reduce((sum, e) => sum + parseFloat(e.rent || "0"), 0);
 
   // Renewals due within 30 days
   const now = new Date();
@@ -13,13 +21,13 @@ export function transformOverview(rentRoll: AppFolioRentRollEntry[]): DashboardO
   const fourteenDaysOut = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
   const renewalsDue30d = rentRoll.filter((e) => {
-    if (!e.lease_to || e.status === "Vacant") return false;
+    if (!e.lease_to || isVacant(e.status)) return false;
     const leaseEnd = new Date(e.lease_to);
     return leaseEnd >= now && leaseEnd <= thirtyDaysOut;
   });
 
   const criticalRenewals = renewalsDue30d.filter((e) => {
-    const leaseEnd = new Date(e.lease_to);
+    const leaseEnd = new Date(e.lease_to!);
     return leaseEnd <= fourteenDaysOut;
   }).length;
 
@@ -35,6 +43,12 @@ export function transformOverview(rentRoll: AppFolioRentRollEntry[]): DashboardO
       value: `${vacancyRate}%`,
       trend: `${vacantUnits} units empty`,
       trendUp: parseFloat(vacancyRate) < 5,
+    },
+    {
+      label: "Monthly Revenue",
+      value: `$${Math.round(totalRent).toLocaleString()}`,
+      trend: `${occupiedUnits} units collecting`,
+      trendUp: true,
     },
     {
       label: "Renewals Due (30d)",
