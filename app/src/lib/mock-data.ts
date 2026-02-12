@@ -75,13 +75,13 @@ export const renewalStatus = [
 ];
 
 export const renewals = [
-  { property: "Oak Apartments", unit: "4B", tenant: "Martinez", leaseEnds: "Feb 18", status: "No Contact", level: "critical", assignedTo: "Maria S.", lastContact: "Never" },
-  { property: "Pine Court", unit: "12", tenant: "Johnson", leaseEnds: "Feb 22", status: "Negotiating", level: "warning", assignedTo: "Chris T.", lastContact: "Feb 8" },
-  { property: "Main Street", unit: "—", tenant: "Williams", leaseEnds: "Feb 28", status: "Renewed", level: "success", assignedTo: "Maria S.", lastContact: "Feb 10" },
-  { property: "Elm Ridge", unit: "6A", tenant: "Davis", leaseEnds: "Mar 5", status: "Negotiating", level: "warning", assignedTo: "Devon R.", lastContact: "Feb 9" },
-  { property: "Cedar Heights", unit: "3C", tenant: "Brown", leaseEnds: "Mar 12", status: "No Contact", level: "warning", assignedTo: "Jordan K.", lastContact: "Never" },
-  { property: "Birch Terrace", unit: "8", tenant: "Wilson", leaseEnds: "Mar 18", status: "Renewed", level: "success", assignedTo: "Chris T.", lastContact: "Feb 7" },
-  { property: "Maple Commons", unit: "15B", tenant: "Taylor", leaseEnds: "Mar 25", status: "Moving Out", level: "critical", assignedTo: "Maria S.", lastContact: "Feb 6" },
+  { property: "Oak Apartments", unit: "4B", tenant: "Martinez", leaseEnds: "Feb 18", status: "No Contact", level: "critical", urgency: "critical", assignedTo: "Maria S.", lastContact: "Never" },
+  { property: "Pine Court", unit: "12", tenant: "Johnson", leaseEnds: "Feb 22", status: "Negotiating", level: "warning", urgency: "warning", assignedTo: "Chris T.", lastContact: "Feb 8" },
+  { property: "Main Street", unit: "—", tenant: "Williams", leaseEnds: "Feb 28", status: "Renewed", level: "success", urgency: "warning", assignedTo: "Maria S.", lastContact: "Feb 10" },
+  { property: "Elm Ridge", unit: "6A", tenant: "Davis", leaseEnds: "Mar 5", status: "Negotiating", level: "warning", urgency: "success", assignedTo: "Devon R.", lastContact: "Feb 9" },
+  { property: "Cedar Heights", unit: "3C", tenant: "Brown", leaseEnds: "Mar 12", status: "No Contact", level: "warning", urgency: "success", assignedTo: "Jordan K.", lastContact: "Never" },
+  { property: "Birch Terrace", unit: "8", tenant: "Wilson", leaseEnds: "Mar 18", status: "Renewed", level: "success", urgency: "success", assignedTo: "Chris T.", lastContact: "Feb 7" },
+  { property: "Maple Commons", unit: "15B", tenant: "Taylor", leaseEnds: "Mar 25", status: "Moving Out", level: "critical", urgency: "neutral", assignedTo: "Maria S.", lastContact: "Feb 6" },
 ];
 
 // -- Owner Communications --

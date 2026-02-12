@@ -107,6 +107,7 @@ export interface DashboardRenewal {
   leaseEnds: string;
   status: string;
   level: "critical" | "warning" | "success";
+  urgency: "critical" | "warning" | "success" | "neutral";
   assignedTo: string;
   lastContact: string;
 }

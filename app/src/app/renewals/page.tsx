@@ -59,18 +59,11 @@ export default function Renewals() {
     return ["All", ...Array.from(unique).filter(Boolean).sort()];
   }, [renewals]);
 
-  // Map urgency filter to which renewals to show based on level
+  // Filter by time-based urgency (from lease end date), not status-based level
   const filteredRenewals = useMemo(() => {
     return renewals.filter((r) => {
-      // Urgency filter — map level to tab
-      if (urgencyFilter !== "all") {
-        if (urgencyFilter === "critical" && r.level !== "critical") return false;
-        if (urgencyFilter === "warning" && r.level !== "warning") return false;
-        if (urgencyFilter === "success" && r.level !== "success") return false;
-        // neutral = anything not critical/warning/success — but our data only has those three levels
-        // so we treat neutral as "success" level for planned items that aren't critical/warning
-        if (urgencyFilter === "neutral" && r.level !== "success") return false;
-      }
+      // Urgency filter — uses r.urgency (time-based: critical/warning/success/neutral)
+      if (urgencyFilter !== "all" && r.urgency !== urgencyFilter) return false;
 
       // Status filter
       if (statusFilter !== "All" && r.status !== statusFilter) return false;

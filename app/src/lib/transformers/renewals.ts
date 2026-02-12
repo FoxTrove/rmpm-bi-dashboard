@@ -139,6 +139,8 @@ export function transformRenewals(
     .map((entry) => {
       const { status, level, assignedTo, lastContact } = getRenewalStatus(entry, workflows);
       if (statusCounts[status] !== undefined) statusCounts[status]++;
+      const days = daysUntil(entry.lease_to!);
+      const urgency = getUrgencyBucket(days).color;
       return {
         property: entry.property_name || "Unknown",
         unit: entry.unit || "—",
@@ -146,13 +148,14 @@ export function transformRenewals(
         leaseEnds: formatDate(entry.lease_to!),
         status,
         level,
+        urgency,
         assignedTo,
         lastContact,
       };
     })
     .sort((a, b) => {
-      const levelOrder = { critical: 0, warning: 1, success: 2 };
-      return (levelOrder[a.level] ?? 2) - (levelOrder[b.level] ?? 2);
+      const urgencyOrder = { critical: 0, warning: 1, success: 2, neutral: 3 };
+      return (urgencyOrder[a.urgency] ?? 3) - (urgencyOrder[b.urgency] ?? 3);
     });
 
   const totalWithStatus = Object.values(statusCounts).reduce((a, b) => a + b, 0);
