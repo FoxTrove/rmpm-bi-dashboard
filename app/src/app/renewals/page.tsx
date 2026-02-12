@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import DataSourceBadge from "@/components/DataSourceBadge";
+import { SkeletonPage } from "@/components/Skeleton";
 import { useAppFolioData } from "@/hooks/useAppFolioData";
 import { Search, ChevronDown } from "lucide-react";
 import {
@@ -40,7 +41,7 @@ function getLevelForUrgency(label: string): UrgencyFilter {
 }
 
 export default function Renewals() {
-  const { data, source, error } = useAppFolioData<DashboardRenewalsData>(
+  const { data, source, error, isLoading } = useAppFolioData<DashboardRenewalsData>(
     "/api/appfolio/renewals",
     fallback
   );
@@ -104,6 +105,10 @@ export default function Renewals() {
         <DataSourceBadge source={source} error={error} />
       </div>
 
+      {isLoading ? (
+        <SkeletonPage />
+      ) : (
+      <>
       {/* Urgency Summary — clickable */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">
         {renewalSummary.map((item) => {
@@ -308,6 +313,8 @@ export default function Renewals() {
           </table>
         </div>
       </div>
+      </>
+      )}
     </>
   );
 }

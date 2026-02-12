@@ -4,6 +4,7 @@ import KPICard from "@/components/KPICard";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import DataSourceBadge from "@/components/DataSourceBadge";
+import { SkeletonPage } from "@/components/Skeleton";
 import { useAppFolioData } from "@/hooks/useAppFolioData";
 import { kpiCards as mockKpiCards, activityFeed, alerts, vacancyTrend } from "@/lib/mock-data";
 import type { DashboardOverviewData } from "@/lib/appfolio/types";
@@ -39,7 +40,7 @@ const iconMap: Record<string, React.ElementType> = {
 const fallback: DashboardOverviewData = { kpiCards: mockKpiCards };
 
 export default function Overview() {
-  const { data, source, error } = useAppFolioData<DashboardOverviewData>(
+  const { data, source, error, isLoading } = useAppFolioData<DashboardOverviewData>(
     "/api/appfolio/overview",
     fallback
   );
@@ -63,6 +64,10 @@ export default function Overview() {
         <DataSourceBadge source={source} error={error} />
       </div>
 
+      {isLoading ? (
+        <SkeletonPage />
+      ) : (
+      <>
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
         {mergedKPIs.map((kpi) => (
@@ -200,6 +205,8 @@ export default function Overview() {
           })}
         </div>
       </div>
+      </>
+      )}
     </>
   );
 }

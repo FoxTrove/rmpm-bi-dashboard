@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import DataSourceBadge from "@/components/DataSourceBadge";
+import { SkeletonPage } from "@/components/Skeleton";
 import { useAppFolioData } from "@/hooks/useAppFolioData";
 import { ChevronDown, AlertCircle } from "lucide-react";
 import {
@@ -40,7 +41,7 @@ const statusOptions = [
 ];
 
 export default function Leasing() {
-  const { data, source, error } = useAppFolioData<DashboardLeasingData>(
+  const { data, source, error, isLoading } = useAppFolioData<DashboardLeasingData>(
     "/api/appfolio/leasing",
     fallback
   );
@@ -87,6 +88,10 @@ export default function Leasing() {
         <DataSourceBadge source={source} error={error} />
       </div>
 
+      {isLoading ? (
+        <SkeletonPage />
+      ) : (
+      <>
       {/* Funnel Visualization */}
       <div className="rounded-xl bg-card border border-border p-6 shadow-sm mb-6">
         <h2 className="text-sm font-semibold text-text uppercase tracking-wider mb-6">
@@ -360,6 +365,8 @@ export default function Leasing() {
           </table>
         </div>
       </div>
+      </>
+      )}
     </>
   );
 }

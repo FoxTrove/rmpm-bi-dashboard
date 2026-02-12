@@ -3,6 +3,7 @@
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import DataSourceBadge from "@/components/DataSourceBadge";
+import { SkeletonPage } from "@/components/Skeleton";
 import { useAppFolioData } from "@/hooks/useAppFolioData";
 import type { DashboardPortfolioData } from "@/lib/transformers/portfolio";
 import {
@@ -54,7 +55,7 @@ const fallback: DashboardPortfolioData = {
 };
 
 export default function Portfolio() {
-  const { data, source, error } = useAppFolioData<DashboardPortfolioData>(
+  const { data, source, error, isLoading } = useAppFolioData<DashboardPortfolioData>(
     "/api/appfolio/portfolio",
     fallback
   );
@@ -73,6 +74,10 @@ export default function Portfolio() {
         <DataSourceBadge source={source} error={error} />
       </div>
 
+      {isLoading ? (
+        <SkeletonPage />
+      ) : (
+      <>
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">
         {summaryCards.map((card) => (
@@ -170,6 +175,8 @@ export default function Portfolio() {
           </table>
         </div>
       </div>
+      </>
+      )}
     </>
   );
 }

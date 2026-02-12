@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
+import DemoDataBanner from "@/components/DemoDataBanner";
 import StatusBadge from "@/components/StatusBadge";
 import {
   LineChart,
@@ -77,6 +78,7 @@ export default function OwnerPortal() {
         title="Owner Portal Preview"
         subtitle="This is exactly what your property owners see — branded, automated, zero manual work"
       />
+      <DemoDataBanner />
 
       {/* Context Banner */}
       <div className="rounded-xl bg-navy/5 border border-navy/15 p-4 mb-6 flex items-center gap-3">

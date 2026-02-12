@@ -2,6 +2,17 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 
+interface CacheEntry<T> {
+  data: T;
+  source: "appfolio" | "mock";
+  error: string | null;
+  timestamp: number;
+}
+
+// Module-level cache — persists across navigation within the same session
+const dataCache = new Map<string, CacheEntry<unknown>>();
+const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
+
 interface UseAppFolioDataResult<T> {
   data: T | null;
   source: "appfolio" | "mock" | "loading";
@@ -16,10 +27,16 @@ export function useAppFolioData<T>(
   apiPath: string,
   fallbackData: T
 ): UseAppFolioDataResult<T> {
-  const [data, setData] = useState<T>(fallbackData);
-  const [source, setSource] = useState<"appfolio" | "mock" | "loading">("mock");
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Check cache for initial state
+  const cached = dataCache.get(apiPath) as CacheEntry<T> | undefined;
+  const hasFreshCache = cached && Date.now() - cached.timestamp < CACHE_MAX_AGE_MS;
+
+  const [data, setData] = useState<T>(hasFreshCache ? cached.data : fallbackData);
+  const [source, setSource] = useState<"appfolio" | "mock" | "loading">(
+    hasFreshCache ? cached.source : "loading"
+  );
+  const [error, setError] = useState<string | null>(hasFreshCache ? cached.error : null);
+  const [isLoading, setIsLoading] = useState(!hasFreshCache);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const fetchData = useCallback(async () => {
@@ -30,23 +47,38 @@ export function useAppFolioData<T>(
       setData(json.data);
       setSource(json.source);
       setError(json.error || null);
+
+      // Update cache
+      dataCache.set(apiPath, {
+        data: json.data,
+        source: json.source,
+        error: json.error || null,
+        timestamp: Date.now(),
+      });
     } catch (err) {
       // Keep showing whatever we have (fallback or previous data)
-      setSource("mock");
+      if (!hasFreshCache) {
+        setSource("mock");
+      }
       setError(err instanceof Error ? err.message : "Failed to fetch");
     } finally {
       setIsLoading(false);
     }
-  }, [apiPath]);
+  }, [apiPath, hasFreshCache]);
 
   useEffect(() => {
-    fetchData();
+    // If cache is fresh, skip immediate fetch but still schedule refresh
+    if (hasFreshCache) {
+      setIsLoading(false);
+    } else {
+      fetchData();
+    }
 
     intervalRef.current = setInterval(fetchData, REFRESH_INTERVAL_MS);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [fetchData]);
+  }, [fetchData, hasFreshCache]);
 
   return { data, source, error, isLoading, refetch: fetchData };
 }

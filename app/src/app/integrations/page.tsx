@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader";
+import DemoDataBanner from "@/components/DemoDataBanner";
 import { integrationCategories } from "@/lib/mock-data";
 import { CheckCircle2, Circle, ArrowRight, Plug, Zap } from "lucide-react";
 
@@ -36,6 +37,7 @@ export default function Integrations() {
         title="Integrations Hub"
         subtitle="Every tool connected — one unified data layer"
       />
+      <DemoDataBanner />
 
       {/* Summary Banner */}
       <div className="rounded-xl bg-gradient-to-r from-navy to-navy-light p-6 shadow-lg mb-6 text-white">

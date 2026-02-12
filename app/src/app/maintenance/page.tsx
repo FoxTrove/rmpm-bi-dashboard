@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader";
+import DemoDataBanner from "@/components/DemoDataBanner";
 import StatusBadge from "@/components/StatusBadge";
 import {
   maintenanceKPIs,
@@ -54,6 +55,7 @@ export default function Maintenance() {
         title="Maintenance Operations"
         subtitle="Work orders, vendor management, and SLA tracking — synced from AppFolio"
       />
+      <DemoDataBanner />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6 mb-6">

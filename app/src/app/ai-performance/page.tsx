@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader";
+import DemoDataBanner from "@/components/DemoDataBanner";
 import {
   aiCallSummary,
   aiPositiveOutcomes,
@@ -35,6 +36,7 @@ export default function AIPerformance() {
         title="AI Performance"
         subtitle="Last 30 days — measuring what the AI actually delivers"
       />
+      <DemoDataBanner />
 
       {/* Call Outcome Summary */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">

@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader";
+import DemoDataBanner from "@/components/DemoDataBanner";
 import StatusBadge from "@/components/StatusBadge";
 import { teamMembers, mariaScorecard } from "@/lib/mock-data";
 import { Trophy, CheckCircle2, AlertTriangle } from "lucide-react";
@@ -12,6 +13,7 @@ export default function TeamPerformance() {
         title="Team Performance"
         subtitle="Property manager scorecards — accountability without micromanagement"
       />
+      <DemoDataBanner />
 
       {/* Leaderboard */}
       <div className="rounded-xl bg-card border border-border shadow-sm overflow-hidden mb-6">

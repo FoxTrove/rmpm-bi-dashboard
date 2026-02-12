@@ -3,6 +3,7 @@
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
 import DataSourceBadge from "@/components/DataSourceBadge";
+import { SkeletonPage } from "@/components/Skeleton";
 import { useAppFolioData } from "@/hooks/useAppFolioData";
 import type { BriefingData } from "@/lib/briefing/generate";
 import {
@@ -97,7 +98,7 @@ const fallbackBriefing: BriefingData = {
 };
 
 export default function MorningBriefing() {
-  const { data, source, error } = useAppFolioData<BriefingData>(
+  const { data, source, error, isLoading } = useAppFolioData<BriefingData>(
     "/api/briefing",
     fallbackBriefing
   );
@@ -124,6 +125,10 @@ export default function MorningBriefing() {
         )}
       </div>
 
+      {isLoading ? (
+        <SkeletonPage />
+      ) : (
+      <>
       {/* Greeting Card */}
       <div className="rounded-2xl bg-gradient-to-br from-navy via-navy-light to-navy p-8 shadow-lg mb-6 text-white relative overflow-hidden">
         <div className="absolute top-4 right-6 opacity-10">
@@ -280,6 +285,8 @@ export default function MorningBriefing() {
             : "This is a demo briefing with static content. Connect your AppFolio API and Anthropic API key to see AI-generated insights from your real portfolio data."}
         </p>
       </div>
+      </>
+      )}
     </>
   );
 }

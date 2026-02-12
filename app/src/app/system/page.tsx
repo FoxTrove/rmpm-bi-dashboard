@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader";
+import DemoDataBanner from "@/components/DemoDataBanner";
 import StatusBadge from "@/components/StatusBadge";
 import { integrations, dataFlows } from "@/lib/mock-data";
 import {
@@ -32,6 +33,7 @@ export default function SystemHealth() {
         title="System Health"
         subtitle="All connected systems and automation status"
       />
+      <DemoDataBanner />
 
       {/* Integration Status */}
       <div className="rounded-xl bg-card border border-border p-6 shadow-sm mb-6">

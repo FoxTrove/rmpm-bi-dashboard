@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader";
+import DemoDataBanner from "@/components/DemoDataBanner";
 import StatusBadge from "@/components/StatusBadge";
 import {
   aiRentOptimization,
@@ -46,6 +47,7 @@ export default function AIInsights() {
         title="AI Insights"
         subtitle="Predictive intelligence — the AI doesn't just answer calls, it runs your business"
       />
+      <DemoDataBanner />
 
       {/* AI Value Banner */}
       <div className="rounded-xl bg-gradient-to-r from-navy to-navy-light p-6 shadow-lg mb-6 text-white">

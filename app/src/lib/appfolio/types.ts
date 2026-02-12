@@ -171,6 +171,56 @@ export interface DashboardOverviewData {
   kpiCards: DashboardKPI[];
 }
 
+// --- Financials Dashboard ---
+
+export interface DashboardFinancialSummary {
+  totalRevenue: string;
+  totalExpenses: string;
+  noi: string;
+  noiMargin: string;
+  collectionRate: string;
+  outstandingBalance: string;
+  avgRentPerUnit: string;
+  yoyRevenueGrowth: string;
+}
+
+export interface DashboardRevenueMonth {
+  month: string;
+  revenue: number;
+  expenses: number;
+  noi: number;
+}
+
+export interface DashboardPropertyFinancial {
+  property: string;
+  units: number;
+  revenue: string;
+  expenses: string;
+  noi: string;
+  margin: string;
+  collection: string;
+}
+
+export interface DashboardCollectionStatus {
+  label: string;
+  count: number;
+  pct: number;
+}
+
+export interface DashboardExpenseCategory {
+  category: string;
+  amount: number;
+  pct: number;
+}
+
+export interface DashboardFinancialsData {
+  financialSummary: DashboardFinancialSummary;
+  revenueByMonth: DashboardRevenueMonth[];
+  propertyFinancials: DashboardPropertyFinancial[];
+  rentCollectionStatus: DashboardCollectionStatus[];
+  expenseBreakdown: DashboardExpenseCategory[];
+}
+
 export interface ApiResponse<T> {
   data: T;
   source: "appfolio" | "mock";

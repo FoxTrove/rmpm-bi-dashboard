@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader";
+import DemoDataBanner from "@/components/DemoDataBanner";
 import StatusBadge from "@/components/StatusBadge";
 import {
   tenantKPIs,
@@ -39,6 +40,7 @@ export default function Tenants() {
         title="Tenant Insights"
         subtitle="Retention intelligence, communication tracking, and satisfaction monitoring"
       />
+      <DemoDataBanner />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6 mb-6">

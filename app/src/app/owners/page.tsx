@@ -1,6 +1,7 @@
 "use client";
 
 import PageHeader from "@/components/PageHeader";
+import DemoDataBanner from "@/components/DemoDataBanner";
 import StatusBadge from "@/components/StatusBadge";
 import { ownerReportStatus, ownerReports } from "@/lib/mock-data";
 import { Send, Clock, AlertTriangle, CheckCircle2 } from "lucide-react";
@@ -17,6 +18,7 @@ export default function OwnerComms() {
         title="Owner Communications"
         subtitle="Automated reporting — zero-touch, always delivered"
       />
+      <DemoDataBanner />
 
       {/* Report Status Summary */}
       <div className="rounded-xl bg-card border border-border p-6 shadow-sm mb-6">

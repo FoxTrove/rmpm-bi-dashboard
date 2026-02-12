@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
+import DemoDataBanner from "@/components/DemoDataBanner";
 import {
   BarChart,
   Bar,
@@ -189,6 +190,7 @@ export default function ROICalculator() {
         title="ROI Calculator"
         subtitle="Projected return on your unified operations platform — backed by industry data"
       />
+      <DemoDataBanner />
 
       {/* Estimate Toggle */}
       <div className="flex items-center gap-3 mb-6">
