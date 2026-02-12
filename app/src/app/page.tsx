@@ -3,7 +3,10 @@
 import KPICard from "@/components/KPICard";
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
-import { kpiCards, activityFeed, alerts, vacancyTrend } from "@/lib/mock-data";
+import DataSourceBadge from "@/components/DataSourceBadge";
+import { useAppFolioData } from "@/hooks/useAppFolioData";
+import { kpiCards as mockKpiCards, activityFeed, alerts, vacancyTrend } from "@/lib/mock-data";
+import type { DashboardOverviewData } from "@/lib/appfolio/types";
 import {
   LineChart,
   Line,
@@ -22,7 +25,6 @@ import {
   ArrowRight,
   TrendingUp,
   Users,
-  BarChart3,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -34,7 +36,22 @@ const iconMap: Record<string, React.ElementType> = {
   ai: Bot,
 };
 
+const fallback: DashboardOverviewData = { kpiCards: mockKpiCards };
+
 export default function Overview() {
+  const { data, source, error } = useAppFolioData<DashboardOverviewData>(
+    "/api/appfolio/overview",
+    fallback
+  );
+
+  // Merge: live KPIs replace matching labels, keep mock KPIs for items not in the live set
+  const liveKPIs = data?.kpiCards || [];
+  const liveLabels = new Set(liveKPIs.map((k) => k.label));
+  const mergedKPIs = [
+    ...liveKPIs,
+    ...mockKpiCards.filter((k) => !liveLabels.has(k.label)),
+  ];
+
   return (
     <>
       <PageHeader
@@ -42,9 +59,13 @@ export default function Overview() {
         subtitle="Real Property Management of the Rockies — 10-second health check"
       />
 
+      <div className="mb-4 flex justify-end">
+        <DataSourceBadge source={source} error={error} />
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
-        {kpiCards.map((kpi) => (
+        {mergedKPIs.map((kpi) => (
           <KPICard key={kpi.label} {...kpi} />
         ))}
       </div>

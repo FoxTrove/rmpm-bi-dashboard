@@ -2,15 +2,39 @@
 
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
-import { renewalSummary, renewalStatus, renewals } from "@/lib/mock-data";
+import DataSourceBadge from "@/components/DataSourceBadge";
+import { useAppFolioData } from "@/hooks/useAppFolioData";
+import {
+  renewalSummary as mockRenewalSummary,
+  renewalStatus as mockRenewalStatus,
+  renewals as mockRenewals,
+} from "@/lib/mock-data";
+import type { DashboardRenewalsData } from "@/lib/appfolio/types";
+
+const fallback = {
+  renewalSummary: mockRenewalSummary,
+  renewalStatus: mockRenewalStatus,
+  renewals: mockRenewals,
+} as DashboardRenewalsData;
 
 export default function Renewals() {
+  const { data, source, error } = useAppFolioData<DashboardRenewalsData>(
+    "/api/appfolio/renewals",
+    fallback
+  );
+
+  const { renewalSummary, renewalStatus, renewals } = data!;
+
   return (
     <>
       <PageHeader
         title="Renewals Center"
         subtitle="Upcoming lease expirations and renewal pipeline"
       />
+
+      <div className="mb-4 flex justify-end">
+        <DataSourceBadge source={source} error={error} />
+      </div>
 
       {/* Urgency Summary */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 mb-6">

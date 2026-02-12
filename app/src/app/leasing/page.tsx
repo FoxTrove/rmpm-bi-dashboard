@@ -2,7 +2,15 @@
 
 import PageHeader from "@/components/PageHeader";
 import StatusBadge from "@/components/StatusBadge";
-import { leasingFunnel, leadSources, activeLeads, leadsOverTime } from "@/lib/mock-data";
+import DataSourceBadge from "@/components/DataSourceBadge";
+import { useAppFolioData } from "@/hooks/useAppFolioData";
+import {
+  leasingFunnel as mockLeasingFunnel,
+  leadSources as mockLeadSources,
+  activeLeads as mockActiveLeads,
+  leadsOverTime as mockLeadsOverTime,
+} from "@/lib/mock-data";
+import type { DashboardLeasingData } from "@/lib/appfolio/types";
 import {
   AreaChart,
   Area,
@@ -14,13 +22,31 @@ import {
   Legend,
 } from "recharts";
 
+const fallback = {
+  leasingFunnel: mockLeasingFunnel,
+  leadSources: mockLeadSources,
+  activeLeads: mockActiveLeads,
+  leadsOverTime: mockLeadsOverTime,
+} as DashboardLeasingData;
+
 export default function Leasing() {
+  const { data, source, error } = useAppFolioData<DashboardLeasingData>(
+    "/api/appfolio/leasing",
+    fallback
+  );
+
+  const { leasingFunnel, leadSources, activeLeads, leadsOverTime } = data!;
+
   return (
     <>
       <PageHeader
         title="Leasing Pipeline"
         subtitle="Full funnel visibility — from inquiry to signed lease"
       />
+
+      <div className="mb-4 flex justify-end">
+        <DataSourceBadge source={source} error={error} />
+      </div>
 
       {/* Funnel Visualization */}
       <div className="rounded-xl bg-card border border-border p-6 shadow-sm mb-6">
@@ -44,9 +70,11 @@ export default function Leasing() {
                   <p className="text-2xl font-bold text-text">{stage.count}</p>
                   <p className="text-xs font-medium text-text-secondary">{stage.stage}</p>
                   <p className="text-xs text-text-secondary">({stage.pct}%)</p>
-                  <p className="mt-1 text-[11px] font-medium text-success">
-                    +{stage.weekDelta} this week
-                  </p>
+                  {stage.weekDelta > 0 && (
+                    <p className="mt-1 text-[11px] font-medium text-success">
+                      +{stage.weekDelta} this week
+                    </p>
+                  )}
                 </div>
               </div>
             );
