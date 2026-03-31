@@ -101,10 +101,10 @@ export default function OwnerPortal() {
           <div className="flex items-center gap-4">
             <Image
               src="/logo.png"
-              alt="RPM Rockies"
+              alt="Property Management"
+              className="brightness-0 invert blur-md"
               width={140}
               height={46}
-              className="brightness-0 invert"
             />
             <div className="h-8 w-px bg-white/20" />
             <div>
@@ -337,7 +337,7 @@ export default function OwnerPortal() {
         {/* Portal Footer */}
         <div className="bg-white border-t border-border px-8 py-4 flex items-center justify-between">
           <p className="text-xs text-text-secondary">
-            Powered by Real Property Management of the Rockies
+            Powered by Your Property Management Company
           </p>
           <div className="flex items-center gap-4 text-xs text-text-secondary">
             <span className="flex items-center gap-1">
@@ -350,7 +350,7 @@ export default function OwnerPortal() {
         </div>
       </div>
 
-      {/* Explanation for Jarid */}
+      {/* Explanation */}
       <div className="mt-6 rounded-xl bg-card border border-border p-6 shadow-sm">
         <h3 className="text-sm font-semibold text-text uppercase tracking-wider mb-3">
           Why This Matters
@@ -371,7 +371,7 @@ export default function OwnerPortal() {
           <div className="rounded-lg bg-bg p-4">
             <p className="text-sm font-medium text-text mb-1">Your brand, not AppFolio&apos;s</p>
             <p className="text-xs text-text-secondary">
-              Owners see &quot;Real Property Management of the Rockies&quot; — not a generic software portal. This is your platform.
+              Owners see your company name — not a generic software portal. This is your platform.
             </p>
           </div>
         </div>

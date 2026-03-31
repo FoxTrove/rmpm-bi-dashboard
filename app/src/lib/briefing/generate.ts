@@ -41,11 +41,11 @@ interface PortfolioSnapshot {
   topLeadSources: string[];
 }
 
-const SYSTEM_PROMPT = `You are an AI property management assistant for Rocky Mountain Property Management. Generate a JSON morning briefing for the owner/operator based on the real portfolio data provided.
+const SYSTEM_PROMPT = `You are an AI property management assistant. Generate a JSON morning briefing for the owner/operator based on the real portfolio data provided.
 
 Your response MUST be valid JSON matching this exact structure:
 {
-  "greeting": "A personalized 2-3 sentence morning greeting addressing Jarid. Reference specific numbers from the data — occupancy, vacancy, notable trends. Keep it warm but professional.",
+  "greeting": "A personalized 2-3 sentence morning greeting for the operator. Reference specific numbers from the data — occupancy, vacancy, notable trends. Keep it warm but professional.",
   "attentionItems": [
     {
       "level": "critical" or "warning",
@@ -97,7 +97,7 @@ export async function generateBriefing(
 
   const client = new Anthropic({ apiKey });
 
-  const userPrompt = `Here is today's portfolio data for Rocky Mountain Property Management:
+  const userPrompt = `Here is today's portfolio data:
 
 Total Properties: ${snapshot.totalProperties}
 Total Units: ${snapshot.totalUnits}

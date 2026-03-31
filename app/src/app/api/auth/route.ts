@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const { password } = await request.json();
-  const sitePassword = process.env.SITE_PASSWORD || "rpm-rockies-2025";
+  const sitePassword = process.env.SITE_PASSWORD || "demo-2025";
 
   if (password === sitePassword) {
     const response = NextResponse.json({ success: true });

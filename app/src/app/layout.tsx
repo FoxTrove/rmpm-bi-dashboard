@@ -14,8 +14,8 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RPM Rockies Command Center",
-  description: "Unified Operations Platform for Real Property Management of the Rockies",
+  title: "Property Management Command Center",
+  description: "Unified Operations Platform — Demo",
 };
 
 export default function RootLayout({

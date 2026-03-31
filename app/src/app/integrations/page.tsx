@@ -78,7 +78,7 @@ export default function Integrations() {
         <div className="flex items-center justify-center gap-2 flex-wrap py-4">
           {[
             { label: "AppFolio", sub: "Source of truth" },
-            { label: "RPM Command Center", sub: "Unified layer", highlight: true },
+            { label: "Command Center", sub: "Unified layer", highlight: true },
             { label: "Owner Reports", sub: "Auto-generated" },
           ].map((node, i) => (
             <div key={node.label} className="flex items-center gap-2">

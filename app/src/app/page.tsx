@@ -57,7 +57,7 @@ export default function Overview() {
     <>
       <PageHeader
         title="Overview"
-        subtitle="Real Property Management of the Rockies — 10-second health check"
+        subtitle="Property Management Command Center — 10-second health check"
       />
 
       <div className="mb-4 flex justify-end">

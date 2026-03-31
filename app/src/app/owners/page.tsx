@@ -83,7 +83,7 @@ export default function OwnerComms() {
         <div className="rounded-xl bg-card border border-border shadow-sm overflow-hidden">
           <div className="bg-navy px-6 py-4">
             <h3 className="text-white font-bold text-sm">
-              RPM ROCKIES — PROPERTY PERFORMANCE REPORT
+              PROPERTY PERFORMANCE REPORT
             </h3>
             <p className="text-white/60 text-xs mt-1">Week of February 10, 2025</p>
           </div>

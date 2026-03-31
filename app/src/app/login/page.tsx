@@ -49,10 +49,10 @@ export default function LoginPage() {
           <div className="mb-6 flex justify-center">
             <Image
               src="/logo.png"
-              alt="Real Property Management of the Rockies"
+              alt="Property Management"
+              className="brightness-0 invert blur-md"
               width={220}
               height={73}
-              className="brightness-0 invert"
               priority
             />
           </div>
@@ -112,7 +112,7 @@ export default function LoginPage() {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-xs text-white/30">
-            Prepared exclusively for Real Property Management of the Rockies
+            Prepared exclusively for demo purposes
           </p>
           <p className="mt-1 text-xs text-white/20">
             Built by FoxTrove

@@ -82,10 +82,10 @@ export default function Sidebar() {
       <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
         <Image
           src="/logo.png"
-          alt="Real Property Management of the Rockies"
+          alt="Property Management"
           width={180}
           height={60}
-          className="brightness-0 invert"
+          className="brightness-0 invert blur-md"
           priority
         />
       </div>

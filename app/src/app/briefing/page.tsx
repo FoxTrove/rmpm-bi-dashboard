@@ -26,7 +26,7 @@ const dateStr = today.toLocaleDateString("en-US", {
 
 const fallbackBriefing: BriefingData = {
   greeting:
-    "Good morning, Jarid. Your portfolio is performing well. Occupancy is strong and the team is on track. There are a few items that need your attention and some wins worth celebrating.",
+    "Good morning. Your portfolio is performing well. Occupancy is strong and the team is on track. There are a few items that need your attention and some wins worth celebrating.",
   attentionItems: [
     {
       level: "critical",
@@ -141,7 +141,7 @@ export default function MorningBriefing() {
             <span className="text-white/30 mx-2">|</span>
             <span className="text-white/50">{dateStr}</span>
           </div>
-          <h2 className="text-2xl font-bold mb-4">Good morning, Jarid.</h2>
+          <h2 className="text-2xl font-bold mb-4">Good morning.</h2>
           <p className="text-lg text-white/80 leading-relaxed max-w-3xl">
             {briefing.greeting}
           </p>

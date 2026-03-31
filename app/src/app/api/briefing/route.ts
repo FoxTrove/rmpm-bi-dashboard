@@ -11,7 +11,7 @@ const CACHE_TTL_MS = 4 * 60 * 60 * 1000;
 // --- Static fallback ---
 const fallbackBriefing: BriefingData = {
   greeting:
-    "Good morning, Jarid. Your portfolio is performing well. Occupancy is strong and the team is on track. There are a few items that need your attention and some wins worth celebrating.",
+    "Good morning. Your portfolio is performing well. Occupancy is strong and the team is on track. There are a few items that need your attention and some wins worth celebrating.",
   attentionItems: [
     {
       level: "critical",

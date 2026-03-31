@@ -422,7 +422,7 @@ export default function ROICalculator() {
         </h2>
         <p className="text-white/60 max-w-2xl mx-auto mb-4">
           This isn&apos;t another software subscription. It&apos;s a custom-built operations platform designed around
-          exactly how RPM Rockies works — fully owned, no per-seat fees, no monthly charges.
+          exactly how your company works — fully owned, no per-seat fees, no monthly charges.
         </p>
         <div className="flex items-center justify-center gap-6 text-sm flex-wrap">
           {[

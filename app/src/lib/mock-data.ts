@@ -1,5 +1,5 @@
 // ============================================================
-// Mock data for RPM Rockies Command Center prototype
+// Mock data for Property Management Command Center prototype
 // ============================================================
 
 // -- Overview KPIs --
